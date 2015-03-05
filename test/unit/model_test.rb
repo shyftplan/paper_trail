@@ -1385,19 +1385,32 @@ class HasPaperTrailModelTest < ActiveSupport::TestCase
     end
   end
 
-  context '`PaperTrail::Config.version_limit` and `PaperTrail::Config.keep_creates` set' do
+  context '`PaperTrail::Config.version_limit` set' do
     setup do
       PaperTrail.config.version_limit = 2
-      PaperTrail.config.keep_creates = false
       @widget = Widget.create! :name => 'Henry'
       6.times { @widget.update_attribute(:name, Faker::Lorem.word) }
     end
 
     teardown { PaperTrail.config.version_limit = nil }
 
-    should "limit the number of versions to 2" do
-      assert_equal 2, @widget.versions.size
-      assert_equal 0, @widget.versions.creates.size
+    should "limit the number of versions to 3 (2 plus the created at event)" do
+      assert_equal 'create', @widget.versions.first.event
+      assert_equal 3, @widget.versions.size
+    end
+
+    context 'PaperTrail::Config.keep_creates set' do
+      setup do
+        PaperTrail.config.keep_creates = false
+        @widget.update_attribute(:name, Faker::Lorem.word)
+      end
+
+      teardown { PaperTrail.config.keep_creates = true }
+
+      should "limit the number of versions to 2" do
+        assert_equal 2, @widget.versions.size
+        assert_equal 0, @widget.versions.creates.size
+      end
     end
   end
 
