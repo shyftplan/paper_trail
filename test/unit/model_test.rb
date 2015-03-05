@@ -214,8 +214,8 @@ class HasPaperTrailModelTest < ActiveSupport::TestCase
 
       should 'have changes' do
 
-        #TODO Postgres does not appear to pass back ActiveSupport::TimeWithZone, 
-        # so chosing the lowest common denominator to test. 
+        #TODO Postgres does not appear to pass back ActiveSupport::TimeWithZone,
+        # so chosing the lowest common denominator to test.
 
         changes = {
           'name'       => [nil, 'Henry'],
@@ -442,7 +442,7 @@ class HasPaperTrailModelTest < ActiveSupport::TestCase
         @last = @widget.versions.last
       end
 
-      teardown do 
+      teardown do
         restore_schema
       end
 
@@ -1382,6 +1382,22 @@ class HasPaperTrailModelTest < ActiveSupport::TestCase
     should "limit the number of versions to 3 (2 plus the created at event)" do
       assert_equal 'create', @widget.versions.first.event
       assert_equal 3, @widget.versions.size
+    end
+  end
+
+  context '`PaperTrail::Config.version_limit` and `PaperTrail::Config.keep_creates` set' do
+    setup do
+      PaperTrail.config.version_limit = 2
+      PaperTrail.config.keep_creates = false
+      @widget = Widget.create! :name => 'Henry'
+      6.times { @widget.update_attribute(:name, Faker::Lorem.word) }
+    end
+
+    teardown { PaperTrail.config.version_limit = nil }
+
+    should "limit the number of versions to 2" do
+      assert_equal 2, @widget.versions.size
+      assert_equal 0, @widget.versions.creates.size
     end
   end
 

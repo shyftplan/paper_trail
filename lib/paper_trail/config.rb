@@ -3,7 +3,7 @@ require 'singleton'
 module PaperTrail
   class Config
     include Singleton
-    attr_accessor :enabled, :timestamp_field, :serializer, :version_limit
+    attr_accessor :enabled, :timestamp_field, :serializer, :version_limit, :keep_creates
 
     def initialize
       @enabled         = true # Indicates whether PaperTrail is on or off.

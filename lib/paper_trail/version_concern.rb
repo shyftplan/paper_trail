@@ -254,7 +254,7 @@ module PaperTrail
     # checks to see if a value has been set for the `version_limit` config option, and if so enforces it
     def enforce_version_limit!
       return unless PaperTrail.config.version_limit.is_a? Numeric
-      previous_versions = sibling_versions.not_creates
+      previous_versions = (PaperTrail.config.keep_creates == false ? sibling_versions : sibling_versions.not_creates)
       return unless previous_versions.size > PaperTrail.config.version_limit
       excess_previous_versions = previous_versions - previous_versions.last(PaperTrail.config.version_limit)
       excess_previous_versions.map(&:destroy)
